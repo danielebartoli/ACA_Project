@@ -17,7 +17,11 @@ import javax.swing.border.TitledBorder;
 
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Wini;
-
+/**
+ * 
+ * @author Hesam
+ *
+ */
 public class SettingClockCycle extends JFrame {
 
 	private JPanel contentPane;

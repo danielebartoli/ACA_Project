@@ -9,7 +9,11 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-
+/**
+ * 
+ * @author Hesam
+ *
+ */
 public class About extends JFrame {
 
 	private JPanel contentPane;

@@ -1,7 +1,11 @@
 package tomasulo;
 
 import java.util.HashMap;
-
+/**
+ * 
+ * @author Hesam
+ *
+ */
 public class MemStation extends ReservationStation{
     
     private String address;		///< Address to be stored or loaded from memory

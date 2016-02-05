@@ -11,7 +11,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
-
+/**
+ * 
+ * @author Hesam
+ *
+ */
 public class Help extends JFrame {
 
 	private String strFileName;

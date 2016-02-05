@@ -40,6 +40,7 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -56,7 +57,11 @@ import tomasulo.ALUStation;
 import tomasulo.Clock;
 import tomasulo.MemStation;
 import tomasulo.RegisterFiles;
-
+/**
+ * 
+ * @author Hesam
+ *
+ */
 public class Main extends JFrame {
 
 	private JPanel contentPane;
@@ -68,7 +73,7 @@ public class Main extends JFrame {
 	JPanel panelScoreboard;
 	JPanel panelTomasulo;
 	JPanel panelPipeline;
-
+	JPanel panelSendEmail;
 	// **************************************************************************************
 	//// start scoreboard
 	// **************************************************************************************
@@ -89,7 +94,8 @@ public class Main extends JFrame {
 	List<Instruction> lstInstructionsScorboard = new ArrayList<Instruction>();
 	List<String> lstreg_resultScorboard1;// =new ArrayList<String>(32);
 	List<String> lstreg_resultScorboard2 = new ArrayList<String>(32);
-
+int[][] lstAsnswerStudet;
+	
 	List<InstructionStatus> lstInstructStatusScorboard = new ArrayList<InstructionStatus>();
 	List<FunctionUnitStatus> _lstFuStatusTempScorboard;// =new
 														// ArrayList<FunctionUnitStatus>();
@@ -978,6 +984,8 @@ public class Main extends JFrame {
 	JLabel lblClockCycleTomasulo;
 	JTextArea txtDisplayTomasulo;
 	List<tomasulo.Instruction> lstInstructionsTomasulo = new ArrayList<tomasulo.Instruction>();
+	int[][] lstAsnswerStudetTomasulo;
+	
 	private RegisterFiles registersTomasulo;
 	private ALUStation[] alu_rsTomasulo;
 	private MemStation[] MemReservationTomasulo;
@@ -1889,7 +1897,8 @@ public class Main extends JFrame {
 	// Create the instruction array.
 	List<PipeLine.Instruction> lstInstructionsPipeLine = new ArrayList<PipeLine.Instruction>();
 	List<JTextField> listOfTextField = new ArrayList<JTextField>();
-
+	int wrongAttemptPipe=0;
+	
 	private JButton btnStep;
 	private JButton btnExeAll;
 	private JMenuItem mntmClockCycle;
@@ -1898,6 +1907,11 @@ public class Main extends JFrame {
 	private JPanel panelShowResultStudent;
 	private JMenuItem menuItem;
 	private JMenuItem mntmAbout;
+	private JTextField txtStudentEmail;
+	private JTextField txtStudentNo;
+	private JButton btnCancelsend;
+	private JButton btnSendScore;
+	private JButton btnSendTomasulo;
 	// **************************************************************************************
 
 	// **************************************************************************************
@@ -2440,6 +2454,7 @@ public class Main extends JFrame {
 						String strAnswerStudent = mapAnswerStudent.get(textField.getName());
 						if (!strAnswer.toLowerCase().equals(strAnswerStudent.toLowerCase())) {
 							textField.setBackground(Color.pink);
+							wrongAttemptPipe++;
 						} else {
 							textField.setBackground(Color.white);
 						}
@@ -2559,7 +2574,7 @@ public class Main extends JFrame {
 				panelScoreboard.setVisible(false);
 				panelTomasulo.setVisible(false);
 				pnlLogin.setVisible(false);
-
+wrongAttemptPipe=0;
 				pnlLogin.setVisible(true);
 				pnlLogin.setBounds(10, 10, 240, 120);
 				setBounds(10, 10, 275, 200);
@@ -2581,6 +2596,7 @@ public class Main extends JFrame {
 				panelPipeline.setBounds(10, 0, 856, 536);
 				setBounds(10, 10, 896, 610);
 				scrollPaneStudent.setVisible(false);
+				wrongAttemptPipe=0;
 			}
 		});
 		mnMethod.add(mntmPipeline);
@@ -2595,7 +2611,7 @@ public class Main extends JFrame {
 
 				panelScoreboard.setBounds(10, 10, 750, 500);
 				setBounds(10, 30, 790, 590);
-
+				wrongAttemptPipe=0;
 				if (bolMode) {
 					scrollPaneScorFuncUnit.setVisible(true);
 					scrollPaneScorRegUnit.setVisible(true);
@@ -2625,7 +2641,7 @@ public class Main extends JFrame {
 				panelScoreboard.setVisible(false);
 				panelTomasulo.setVisible(true);
 				pnlLogin.setVisible(false);
-
+				wrongAttemptPipe=0;
 				panelTomasulo.setBounds(10, 0, 800, 660);
 				setBounds(10, 30, 835, 740);
 				if (bolMode) {
@@ -2702,6 +2718,210 @@ public class Main extends JFrame {
 
 		initScoreboard();
 		initScoreboardStudent();
+		
+		 panelSendEmail = new JPanel();
+		 panelSendEmail.setBounds(450, 40, 310, 135);
+		 contentPane.add(panelSendEmail);
+		 panelSendEmail.setVisible(false);
+		 panelSendEmail.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		 panelSendEmail.setBackground(new Color(230, 230, 250));
+		 panelSendEmail.setLayout(null);
+		 
+		 txtStudentEmail = new JTextField();
+		 txtStudentEmail.setBounds(84, 11, 205, 20);
+		 panelSendEmail.add(txtStudentEmail);
+		 txtStudentEmail.setColumns(10);
+		 
+		 txtStudentNo = new JTextField();
+		 txtStudentNo.setBounds(84, 42, 205, 20);
+		 panelSendEmail.add(txtStudentNo);
+		 txtStudentNo.setColumns(10);
+		 
+		 JButton btnNewButton = new JButton("Send answer");
+		 btnNewButton.addActionListener(new ActionListener() {
+		 	public void actionPerformed(ActionEvent arg0) {
+		 		StringBuilder sb=new StringBuilder();
+		 		if(panelPipeline.isVisible())
+		 		{
+		 			int from=0,to=0;
+		 			
+		 			
+		 			sb.append("<!DOCTYPE html><html><head><title>Answer Pipeline</title></head><body>");
+		 			sb.append("<table style=\"width:300px;\">");
+		 			sb.append("<tr><td>Student No.</td><td>"+txtStudentNo.getText()+"</td></tr>");
+		 			sb.append("<tr><td>Email</td><td>"+txtStudentEmail.getText()+"</td></tr>");
+		 			sb.append("</table>");
+		 			sb.append("<table style=\"width:100%;border:1px solid black;\">");
+		 			sb.append("<tr><th>Instructions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>");
+		 			for (int i = 0; i < numberOfColumns; i++) {
+		 				sb.append("<th >C#"+(i+1)+"</th>");
+		 			}
+		 			sb.append("</tr>");
+		 			
+		 			
+		 			for (int i = 0; i < numberOfRows; i++) {
+		 				sb.append("<tr>");
+		 				strInsLbl = "";
+		 				if (lstInstructionsPipeLine.get(i).destination_register == "null") {
+		 					if (lstInstructionsPipeLine.get(i).operator.name == "sd"
+		 							|| lstInstructionsPipeLine.get(i).operator.name == "sdi") {
+		 						strInsLbl = lstInstructionsPipeLine.get(i).operator.name + " ("
+		 								+ lstInstructionsPipeLine.get(i).source_register1 + ", Offset, "
+		 								+ lstInstructionsPipeLine.get(i).source_register2 + ") "
+		 								+ lstInstructionsPipeLine.get(i).operator.execution_cycles;
+		 					} else {
+		 						strInsLbl = lstInstructionsPipeLine.get(i).operator.name + " ("
+		 								+ lstInstructionsPipeLine.get(i).source_register1 + ", "
+		 								+ lstInstructionsPipeLine.get(i).source_register2 + ") "
+		 								+ lstInstructionsPipeLine.get(i).operator.execution_cycles;
+		 					}
+		 				} else {
+		 					strInsLbl = lstInstructionsPipeLine.get(i).operator.name + " ("
+		 							+ lstInstructionsPipeLine.get(i).destination_register + ", "
+		 							+ lstInstructionsPipeLine.get(i).source_register1 + ", "
+		 							+ lstInstructionsPipeLine.get(i).source_register2 + ") "
+		 							+ lstInstructionsPipeLine.get(i).operator.execution_cycles;
+		 				}
+
+		 				int num = i;
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">I#" + num + " : " + strInsLbl.toUpperCase() + "</td>");
+		 				to+=numberOfColumns;
+		 				int select=0+i;
+		 				int col=0;
+		 				for (int j = from; j < to; j++) {
+		 					select= col*numberOfRows+i;
+		 					JTextField txttemp=new JTextField();
+		 					txttemp=listOfTextField.get(select);
+		 					sb.append("<td  style=\"width:100%;border:1px solid black;\">" + txttemp.getText() + "</td>");
+		 					col++;
+		 				}
+		 				from+=numberOfColumns;
+		 			    sb.append("</tr>");
+		 			}
+		 			
+		 			
+		 			
+		 	/*		 <tr>
+		 			    <td>Eve</td>
+		 			     <td>Jackson</td> 
+		 			    <td>94</td>
+		 			   </tr>
+	*/
+		 			sb.append("</table>");
+		 			sb.append("<h4>Number Of  wrong attempt: "+wrongAttemptPipe+"</h4>");
+		 			sb.append("</body></html> ");
+		 			
+		 			
+		 		}
+		 		else if(panelScoreboard.isVisible())
+		 		{
+
+		 			
+		 			sb.append("<!DOCTYPE html><html><head><title>Answer Pipeline</title></head><body>");
+		 			sb.append("<table style=\"width:300px;\">");
+		 			sb.append("<tr><td>Student No.</td><td>"+txtStudentNo.getText()+"</td></tr>");
+		 			sb.append("<tr><td>Email</td><td>"+txtStudentEmail.getText()+"</td></tr>");
+		 			sb.append("</table>");
+		 			sb.append("<table style=\"width:600px;border:1px solid black;\">");
+		 			sb.append("<tr><th>Instructions</th><th ></th><th >J</th><th >K</th><th >Issue</th><th >Read Oper.</th><th >Exe Com.</th><th >Write Res.</th>");
+		 			for (int i = 0; i < numberOfColumns; i++) {
+		 				sb.append("<th >C#"+(i+1)+"</th>");
+		 			}
+		 			sb.append("</tr>");
+		 			
+		 			
+		 			//tblInstructionsScoreStudent
+		 			for (int i = 0; i < tblInstructionsScoreStudent.getRowCount(); i++) {
+						for (int j = 0; j <tblInstructionsScoreStudent.getColumnCount(); j++) {
+						System.out.println(tblInstructionsScoreStudent.getValueAt(i, j));	
+						}
+						
+						sb.append("<tr>");
+		 				
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 0) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 1) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 2) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 3) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 4) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 5) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 6) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 7) + "</td>");
+		 				 sb.append("</tr>");
+
+					}
+		 			
+		
+		 			
+		 			sb.append("</table>");
+		 			//sb.append("<h4>Number Of  wrong attempt: "+wrongAttemptPipe+"</h4>");
+		 			sb.append("</body></html> ");
+		 		}
+		 		else if(panelTomasulo.isVisible())
+		 		{
+		 			
+		 			sb.append("<!DOCTYPE html><html><head><title>Answer Pipeline</title></head><body>");
+		 			sb.append("<table style=\"width:300px;\">");
+		 			sb.append("<tr><td>Student No.</td><td>"+txtStudentNo.getText()+"</td></tr>");
+		 			sb.append("<tr><td>Email</td><td>"+txtStudentEmail.getText()+"</td></tr>");
+		 			sb.append("</table>");
+		 			sb.append("<table style=\"border:1px solid black;\">");
+		 			sb.append("<tr><th>Instructions</th><th ></th><th >J</th><th >K</th><th >Issue</th><th >Start-Complete</th><th >Write Res.</th>");
+		 			for (int i = 0; i < numberOfColumns; i++) {
+		 				sb.append("<th >C#"+(i+1)+"</th>");
+		 			}
+		 			sb.append("</tr>");
+		 			
+		 			for (int i = 0; i < InstructionTableTomasuloStateStudent.getRowCount(); i++) {
+						for (int j = 0; j <InstructionTableTomasuloStateStudent.getColumnCount(); j++) {
+						System.out.println(InstructionTableTomasuloStateStudent.getValueAt(i, j));	
+						}
+						
+						sb.append("<tr>");
+		 				
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 0) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 1) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 2) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 3) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 4) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 5) + "</td>");
+		 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 6) + "</td>");
+		 				
+		 				 sb.append("</tr>");
+
+					}
+		 			
+		 		
+		 			
+		 			
+		 			sb.append("</table>");
+		 		//	sb.append("<h4>Number Of  wrong attempt: "+wrongAttemptPipe+"</h4>");
+		 			sb.append("</body></html> ");
+		 			
+		 		}
+		 		// TODO here at the next should be change to dynamic email to receiver 
+		 		MailSender ssender=new MailSender();
+		 		ssender.sendEmail("hesamacatest@gmail.com","Answer ACA",sb.toString());
+		 	}
+		 });
+		 btnNewButton.setBounds(140, 90, 131, 23);
+		 panelSendEmail.add(btnNewButton);
+		 
+		 JLabel lblNewLabel_2 = new JLabel("Email:");
+		 lblNewLabel_2.setBounds(22, 14, 63, 14);
+		 panelSendEmail.add(lblNewLabel_2);
+		 
+		 JLabel lblNewLabel_3 = new JLabel("Student N.:");
+		 lblNewLabel_3.setBounds(22, 45, 63, 14);
+		 panelSendEmail.add(lblNewLabel_3);
+		 
+		 btnCancelsend = new JButton("Cancel Send");
+		 btnCancelsend.addActionListener(new ActionListener() {
+		 	public void actionPerformed(ActionEvent e) {
+		 		panelSendEmail.setVisible(false);
+		 	}
+		 });
+		 btnCancelsend.setBounds(24, 90, 106, 23);
+		 panelSendEmail.add(btnCancelsend);
 		///// ******************************pipeline******************************************
 
 		panelPipeline = new JPanel();
@@ -2728,7 +2948,7 @@ public class Main extends JFrame {
 			}
 		});
 
-		chckbxForwardingPipeline.setBounds(265, 140, 97, 23);
+		chckbxForwardingPipeline.setBounds(261, 143, 97, 23);
 		panelPipeline.add(chckbxForwardingPipeline);
 
 		JButton btnReset = new JButton("Reset");
@@ -2756,7 +2976,7 @@ public class Main extends JFrame {
 				panelShowResult.revalidate();
 			}
 		});
-		btnReset.setBounds(261, 110, 89, 23);
+		btnReset.setBounds(261, 90, 89, 23);
 		panelPipeline.add(btnReset);
 
 		// LoadFPRegisters(cmbSourceRegister1);
@@ -2775,7 +2995,7 @@ public class Main extends JFrame {
 				Step();
 			}
 		});
-		btnStep.setBounds(261, 43, 89, 23);
+		btnStep.setBounds(261, 39, 89, 23);
 		panelPipeline.add(btnStep);
 
 		btnExeAll = new JButton("EXE All");
@@ -2787,7 +3007,7 @@ public class Main extends JFrame {
 				}
 			}
 		});
-		btnExeAll.setBounds(261, 76, 89, 23);
+		btnExeAll.setBounds(261, 66, 89, 23);
 		panelPipeline.add(btnExeAll);
 
 		JScrollPane scrollPaneDisplayPipeline = new JScrollPane();
@@ -2957,6 +3177,18 @@ public class Main extends JFrame {
 		panelShowResultStudent = new JPanel();
 		scrollPaneStudent.setViewportView(panelShowResultStudent);
 		panelShowResultStudent.setLayout(null);
+		
+		JButton btnSendEmailPipe = new JButton("Send");
+		btnSendEmailPipe.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			
+				panelSendEmail.setVisible(true);
+				
+			
+			}
+		});
+		btnSendEmailPipe.setBounds(261, 115, 89, 23);
+		panelPipeline.add(btnSendEmailPipe);
 
 
 
@@ -3168,7 +3400,7 @@ public class Main extends JFrame {
 
 		// tblInstructionsScoreStudent = new JTable();
 		scrollPaneScorInstStateStudent.setViewportView(tblInstructionsScoreStudent);
-		btnExecAllScore.setBounds(127, 29, 89, 23);
+		btnExecAllScore.setBounds(115, 29, 89, 23);
 		panelScoreboard.add(btnExecAllScore);
 
 		scrollPaneScorInstState = new JScrollPane();
@@ -3330,6 +3562,8 @@ public class Main extends JFrame {
 					for (int i = 0; i < _NumInstruction; i++)
 						lstInstructStatusScorboard.add(new InstructionStatus(0, 0, 0, 0, 0));
 
+					lstAsnswerStudet=new int[_NumInstruction][8];
+					
 					lstreg_resultScorboard2 = new ArrayList<String>(Collections.nCopies(32, ""));
 					_StatusNextInstructionScorboard = new ArrayList<EnumInstructionStatus>(
 							Collections.nCopies(_NumInstruction, EnumInstructionStatus.none));
@@ -3413,7 +3647,7 @@ public class Main extends JFrame {
 
 			}
 		});
-		btnLoadScore.setBounds(28, 29, 89, 23);
+		btnLoadScore.setBounds(10, 29, 89, 23);
 		panelScoreboard.add(btnLoadScore);
 
 		scrollPaneScorFuncUnit = new JScrollPane();
@@ -3476,11 +3710,20 @@ public class Main extends JFrame {
 		});
 		btnCompareScore.setBounds(127, 2, 89, 23);
 		panelScoreboard.add(btnCompareScore);
+		
+		btnSendScore = new JButton("Send");
+		btnSendScore.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				 panelSendEmail.setVisible(true);
+			}
+		});
+		btnSendScore.setBounds(210, 29, 64, 23);
+		panelScoreboard.add(btnSendScore);
 
 		/// **************************************Tomasulo********************************************
 		panelTomasulo = new JPanel();
 		panelTomasulo.setBackground(new Color(211, 211, 211));
-		panelTomasulo.setBounds(810, 523, 799, 658);
+		panelTomasulo.setBounds(314, 496, 799, 658);
 		contentPane.add(panelTomasulo);
 		panelTomasulo.setLayout(null);
 
@@ -3566,7 +3809,8 @@ public class Main extends JFrame {
 					while (InstructionModelTomasuloStudent.getRowCount() < lstInstructionsTomasulo.size()) {
 						InstructionModelTomasuloStudent.addRow(new Object[] { " ", " ", " ", " ", " ", " ", " " });
 					}
-
+					lstAsnswerStudetTomasulo =new int[lstInstructionsTomasulo.size()][8] ;
+					
 					while (InstructionModelTomasulo.getRowCount() < lstInstructionsTomasulo.size()) {
 						InstructionModelTomasulo.addRow(new Object[] { " ", " ", " ", " ", " ", " ", " " });
 					}
@@ -3637,7 +3881,7 @@ public class Main extends JFrame {
 		lblClockCycleTomasulo.setHorizontalAlignment(SwingConstants.CENTER);
 		lblClockCycleTomasulo.setFont(new Font("Tahoma", Font.BOLD, 13));
 		lblClockCycleTomasulo.setSize(new Dimension(50, 40));
-		lblClockCycleTomasulo.setBounds(292, 124, 73, 16);
+		lblClockCycleTomasulo.setBounds(292, 102, 73, 16);
 		panelTomasulo.add(lblClockCycleTomasulo);
 
 		scrollPaneInstTomasulo = new JScrollPane();
@@ -3769,7 +4013,15 @@ public class Main extends JFrame {
 		JButton btnCompareTomasulo = new JButton("Compare");
 		btnCompareTomasulo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				while (!isComplete()) {
+					ExecuteInstruction();
 
+					updateInstructionTableTomasulo();
+					updateRegisterTableTomasulo();
+					updateMemTableTomasulo();
+					updateALUTableTomasulo();
+				}
+				
 				for (int i = 0; i < InstructionTableTomasuloState.getRowCount(); i++) {
 					for (int j = 4; j < InstructionTableTomasuloState.getColumnCount(); j++) {
 						System.out.println("i:" + i);
@@ -3796,6 +4048,16 @@ public class Main extends JFrame {
 		});
 		btnCompareTomasulo.setBounds(265, 155, 100, 23);
 		panelTomasulo.add(btnCompareTomasulo);
+		
+		btnSendTomasulo = new JButton("Send");
+		btnSendTomasulo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				panelSendEmail.setVisible(true);
+				
+			}
+		});
+		btnSendTomasulo.setBounds(265, 129, 100, 23);
+		panelTomasulo.add(btnSendTomasulo);
 		// panelTomasulo.setLayout(gl_contentPaneTomasulo);
 
 		panelPipeline.setVisible(false);
@@ -3804,7 +4066,7 @@ public class Main extends JFrame {
 
 		pnlLogin.setVisible(true);
 		pnlLogin.setBounds(10, 10, 240, 120);
-		 setBounds(10, 10, 275, 200);
+		// setBounds(10, 10, 275, 200);
 
 	}
 
@@ -3822,9 +4084,11 @@ public class Main extends JFrame {
 					// javax.swing.JOptionPane.showMessageDialog( new JFrame(),
 					// "Complete!" );
 					setBackground(Color.pink);
+					wrongAttemptPipe++;
 				} else {
 					setBackground(Color.WHITE);
 				}
+				lstAsnswerStudet[row][column]=intStudent;
 			} else
 				setBackground(Color.WHITE);
 
@@ -3846,6 +4110,8 @@ public class Main extends JFrame {
 				try{
 					String[] strProf = new String[2];
 					String strProfValue = InstructionTableTomasuloState.getModel().getValueAt(row, column).toString();
+					if(strProfValue.equals("")||strProfValue.equals(" "))
+						strProfValue="0";
 					if (strProfValue.contains("--")) {
 						strProf = strProfValue.split("--");
 					} else {
@@ -3866,14 +4132,38 @@ public class Main extends JFrame {
 
 					int intStudentStart = Integer.parseInt(strStudent[0]);// rowIndex,
 					int intStudentEnd = Integer.parseInt(strStudent[1]);// rowIndex,
+					
+					 switch(column)
+					 {
+					 case 4:
+					
+						 lstAsnswerStudetTomasulo[row][4]=intStudentStart;
+						 setText(Integer.toString( intStudentStart));
+						 break;
+					 case 5:
+						 lstAsnswerStudetTomasulo[row][5]=intStudentStart;
+						 lstAsnswerStudetTomasulo[row][6]=intStudentEnd;
+						 setText(Integer.toString( intStudentStart)+"--"+Integer.toString( intStudentEnd));
+						 break;
 
+					 case 6:
+						 lstAsnswerStudetTomasulo[row][7]=intStudentStart;
+						 setText(Integer.toString( intStudentStart));
+						 break;
+					  }
+					
+					
 					if ((intProfStart != intStudentStart) || (intProfEnd != intStudentEnd)) {
 					// javax.swing.JOptionPane.showMessageDialog( new JFrame(),
 					// "Complete!" );
 					setBackground(Color.pink);
+					//wrongAttemptPipe++;
 				} else {
 					setBackground(Color.WHITE);
 				}
+					
+					
+					
 				}
 				catch(Exception ex)
 				{

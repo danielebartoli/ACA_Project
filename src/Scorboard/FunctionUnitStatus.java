@@ -1,5 +1,9 @@
 package Scorboard;
-
+/**
+ * 
+ * @author Hesam
+ *
+ */
 public class FunctionUnitStatus implements Cloneable {
 	private String fu_name;
 	private String busy;

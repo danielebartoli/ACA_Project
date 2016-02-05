@@ -1,6 +1,10 @@
 package tomasulo;
 
-
+/**
+ * 
+ * @author Hesam
+ *
+ */
 
 public class Instruction {
 	private String oper;
