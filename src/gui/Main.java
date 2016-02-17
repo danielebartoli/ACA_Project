@@ -11,7 +11,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,44 +107,11 @@ int[][] lstAsnswerStudet;
 	List<EnumInstructionStatus> _StatusNextInstructionScorboard;// =new
 																// ArrayList<EnumInstructionStatus>(max_no_instr);
 
-	// Different States of the instruction
-	int issue = 0;
-	int readop = 1;
-	int execute = 2;
-	int write_result = 3;
-	int complete = 4;
+	//functional units
 
-	// Different functional units
-	int integer = 0;
 	int mult1 = 1;
 	int mult2 = 2;
 	int MULT = 5;
-	int add = 3;
-	int divide = 4;
-
-	// Different fields in the functional unit status array
-	int fu_name = 0;
-	int busy = 1;
-	int op = 2;
-	int Fi = 3;
-	int Fj = 4;
-	int Fk = 5;
-	int Qj = 6;
-	int Qk = 7;
-	int Rj = 8;
-	int Rk = 9;
-	int exec = 10;
-
-	// Different fields in the instruction
-
-	int oper = 0;
-	int des = 1;
-	int s1 = 2;
-	int s2 = 3;
-	int fu = 4;
-	int op_name = 5;
-	int status = 6;
-	int exec_cycle = 7;
 
 	int clock = 0;
 	int _NumInstruction, _currentIssue, instr_no, upper_limit, type_of_output, req_clock;
@@ -1911,7 +1881,6 @@ int[][] lstAsnswerStudet;
 	private JTextField txtStudentNo;
 	private JButton btnCancelsend;
 	private JButton btnSendScore;
-	private JButton btnSendTomasulo;
 	// **************************************************************************************
 
 	// **************************************************************************************
@@ -3182,7 +3151,66 @@ wrongAttemptPipe=0;
 		btnSendEmailPipe.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 			
-				panelSendEmail.setVisible(true);
+				//panelSendEmail.setVisible(true);
+				StringBuilder sb=new StringBuilder();
+
+				int from=0,to=0;
+	 			
+	 			sb.append("<table style=\"width:100%;border:1px solid black;\">");
+	 			sb.append("<tr><th>Instructions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>");
+	 			for (int i = 0; i < numberOfColumns; i++) {
+	 				sb.append("<th >C#"+(i+1)+"</th>");
+	 			}
+	 			sb.append("</tr>");
+	 			
+	 			
+	 			for (int i = 0; i < numberOfRows; i++) {
+	 				sb.append("<tr>");
+	 				strInsLbl = "";
+	 				if (lstInstructionsPipeLine.get(i).destination_register == "null") {
+	 					if (lstInstructionsPipeLine.get(i).operator.name == "sd"
+	 							|| lstInstructionsPipeLine.get(i).operator.name == "sdi") {
+	 						strInsLbl = lstInstructionsPipeLine.get(i).operator.name + " ("
+	 								+ lstInstructionsPipeLine.get(i).source_register1 + ", Offset, "
+	 								+ lstInstructionsPipeLine.get(i).source_register2 + ") "
+	 								+ lstInstructionsPipeLine.get(i).operator.execution_cycles;
+	 					} else {
+	 						strInsLbl = lstInstructionsPipeLine.get(i).operator.name + " ("
+	 								+ lstInstructionsPipeLine.get(i).source_register1 + ", "
+	 								+ lstInstructionsPipeLine.get(i).source_register2 + ") "
+	 								+ lstInstructionsPipeLine.get(i).operator.execution_cycles;
+	 					}
+	 				} else {
+	 					strInsLbl = lstInstructionsPipeLine.get(i).operator.name + " ("
+	 							+ lstInstructionsPipeLine.get(i).destination_register + ", "
+	 							+ lstInstructionsPipeLine.get(i).source_register1 + ", "
+	 							+ lstInstructionsPipeLine.get(i).source_register2 + ") "
+	 							+ lstInstructionsPipeLine.get(i).operator.execution_cycles;
+	 				}
+
+	 				int num = i;
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">I#" + num + " : " + strInsLbl.toUpperCase() + "</td>");
+	 				to+=numberOfColumns;
+	 				int select=0+i;
+	 				int col=0;
+	 				for (int j = from; j < to; j++) {
+	 					select= col*numberOfRows+i;
+	 					JTextField txttemp=new JTextField();
+	 					txttemp=listOfTextField.get(select);
+	 					sb.append("<td  style=\"width:100%;border:1px solid black;\">" + txttemp.getText() + "</td>");
+	 					col++;
+	 				}
+	 				from+=numberOfColumns;
+	 			    sb.append("</tr>");
+	 			}
+	 			
+
+	 			sb.append("</table>");
+	 			sb.append("<h4>Number Of  wrong attempt: "+wrongAttemptPipe+"</h4>");
+	 	
+	 			
+	 			
+				SendEmail sndEmail=new SendEmail(sb.toString());
 				
 			
 			}
@@ -3242,13 +3270,56 @@ wrongAttemptPipe=0;
 		JButton btnStudent = new JButton("Student");
 		btnStudent.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				bolMode = false;
-				pnlLogin.setVisible(false);
-				panelPipeline.setVisible(true);
-				panelScoreboard.setVisible(false);
-				panelTomasulo.setVisible(false);
-				setBounds(10, 10, 896, 610);
-				panelPipeline.setBounds(10, 0, 856, 536);
+				
+				String csvFile = "config/users.csv";
+				BufferedReader br = null;
+				String line = "";
+				String cvsSplitBy = ",";
+
+				try {
+
+					br = new BufferedReader(new FileReader(csvFile));
+					while ((line = br.readLine()) != null) {
+
+					        // use comma as separator
+						String[] User = line.split(cvsSplitBy);
+if(User[0].equals(txtUserName.getText())&&User[1].equals(txtPassword.getText()))
+{
+	
+
+						System.out.println("User [code= " + User[0] 
+			                                 + " , name=" + User[1] + "]");
+						bolMode = false;
+						pnlLogin.setVisible(false);
+						panelPipeline.setVisible(true);
+						panelScoreboard.setVisible(false);
+						panelTomasulo.setVisible(false);
+						setBounds(10, 10, 896, 610);
+						panelPipeline.setBounds(10, 0, 856, 536);
+					}
+
+
+					}
+
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					if (br != null) {
+						try {
+							br.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+				if(pnlLogin.isVisible())
+					JOptionPane.showMessageDialog(new JFrame(), "Your username and password is not currect!", "Dialog", JOptionPane.ERROR_MESSAGE);
+
+				
+				
 			}
 		});
 		btnStudent.setBounds(21, 84, 100, 23);
@@ -3714,7 +3785,96 @@ wrongAttemptPipe=0;
 		btnSendScore = new JButton("Send");
 		btnSendScore.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				 panelSendEmail.setVisible(true);
+				
+				flag = false;
+				// no_of_instruction=instru.size();
+				while (not_completeScorboard(_NumInstruction) && !flag) {
+					System.out.print(" clock:" + clock);
+					upper_limit = _currentIssue + 1;
+					upper_limit = (upper_limit == _NumInstruction) ? (_NumInstruction - 1) : upper_limit;
+					update_flag = false;
+					for (int i = 0; i <= upper_limit; i++) {
+						System.out.print(" current operator: " + lstInstructionsScorboard.get(i).getOper());
+						ExecuteInstructionScorboard(i);
+						lstInstructionsScorboard.get(i).setStatus(_StatusNextInstructionScorboard.get(i));
+						System.out.println(" next_status: " + _StatusNextInstructionScorboard.get(i) + " ints: " + i);
+					}
+					if (update_flag) {
+						updateScorboard1();
+						if (!chckbxExeAllScore.isSelected() && clock > counter) {
+							flag = true;
+							counter = clock;
+						}
+
+					}
+
+					clock = clock + 1;
+
+
+				//	updateInstructionTableScorboard();
+
+
+				}
+				
+				
+				
+				
+				
+				
+				
+				StringBuilder sb=new StringBuilder();
+				sb.append("<table style=\"width:600px;border:1px solid black;\">");
+	 			sb.append("<tr><th>Instructions</th><th ></th><th >J</th><th >K</th><th >Issue</th><th >Read Oper.</th><th >Exe Com.</th><th >Write Res.</th>");
+	 			for (int i = 0; i < numberOfColumns; i++) {
+	 				sb.append("<th >C#"+(i+1)+"</th>");
+	 			}
+	 			sb.append("</tr>");
+	 			
+	 			wrongAttemptPipe=0;
+	 			//tblInstructionsScoreStudent
+	 			for (int i = 0; i < tblInstructionsScoreStudent.getRowCount(); i++) {
+					for (int j = 0; j <tblInstructionsScoreStudent.getColumnCount(); j++) {
+					System.out.println(tblInstructionsScoreStudent.getValueAt(i, j));	
+					}
+					
+					sb.append("<tr>");
+	 				
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 0) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 1) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 2) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 3) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 4) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 5) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 6) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + tblInstructionsScoreStudent.getValueAt(i, 7) + "</td>");
+	 				 sb.append("</tr>");
+	 				 
+	 				InstructionStatus instructionStatus = lstInstructStatusScorboard.get(i);
+	 				if( instructionStatus.getIssue()!=Integer.parseInt(tblInstructionsScoreStudent.getValueAt(i, 4).toString()))
+	 					wrongAttemptPipe++;
+	 				
+	 				if(instructionStatus.getReadop()!=Integer.parseInt(tblInstructionsScoreStudent.getValueAt(i, 5).toString()))
+	 					wrongAttemptPipe++;
+	 				if(instructionStatus.getExecute()!=Integer.parseInt(tblInstructionsScoreStudent.getValueAt(i, 6).toString()))
+	 					wrongAttemptPipe++;
+	 				if(instructionStatus.getWrite_result()!=Integer.parseInt(tblInstructionsScoreStudent.getValueAt(i, 7).toString()))
+	 					wrongAttemptPipe++;
+	 				
+				}
+	 			
+	
+	 			
+	 			sb.append("</table>");
+	 			sb.append("<h4>Number Of wrong CLK: "+wrongAttemptPipe+"</h4>");
+				
+	 			SendEmail sndEmail=new SendEmail(sb.toString());
+				
+				
+				
+				
+				
+				
+				
 			}
 		});
 		btnSendScore.setBounds(210, 29, 64, 23);
@@ -4049,10 +4209,81 @@ wrongAttemptPipe=0;
 		btnCompareTomasulo.setBounds(265, 155, 100, 23);
 		panelTomasulo.add(btnCompareTomasulo);
 		
-		btnSendTomasulo = new JButton("Send");
+		JButton btnSendTomasulo = new JButton("Send");
 		btnSendTomasulo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				panelSendEmail.setVisible(true);
+				//panelSendEmail.setVisible(true);
+				StringBuilder sb=new StringBuilder();
+				
+				sb.append("<table style=\"border:1px solid black;\">");
+	 			sb.append("<tr><th>Instructions</th><th ></th><th >J</th><th >K</th><th >Issue</th><th >Start-Complete</th><th >Write Res.</th>");
+	 			for (int i = 0; i < numberOfColumns; i++) {
+	 				sb.append("<th >C#"+(i+1)+"</th>");
+	 			}
+	 			sb.append("</tr>");
+	 			wrongAttemptPipe=0;
+	 			for (int i = 0; i < InstructionTableTomasuloStateStudent.getRowCount(); i++) {
+					for (int j = 0; j <InstructionTableTomasuloStateStudent.getColumnCount(); j++) {
+					System.out.println(InstructionTableTomasuloStateStudent.getValueAt(i, j));	
+					}
+					
+					sb.append("<tr>");
+	 				
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 0) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 1) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 2) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 3) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 4) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 5) + "</td>");
+	 				sb.append("<td  style=\"width:100%;border:1px solid black;\">" + InstructionTableTomasuloStateStudent.getValueAt(i, 6) + "</td>");
+	 				
+	 				 sb.append("</tr>");
+	 				tomasulo.Instruction instructionStatus = lstInstructionsTomasulo.get(i);
+	 				
+	 				if( instructionStatus.getIssueNum()!=Integer.parseInt(InstructionTableTomasuloStateStudent.getValueAt(i, 4).toString()))
+	 					wrongAttemptPipe++;
+	 				
+	 				if( ! InstructionTableTomasuloStateStudent.getValueAt(i, 5).toString().equals(Integer.toString(instructionStatus.getIssueNum())))
+	 					wrongAttemptPipe++;
+	 				
+	 				if( instructionStatus.getIssueNum()!=Integer.parseInt(InstructionTableTomasuloStateStudent.getValueAt(i, 6).toString()))
+	 					wrongAttemptPipe++;
+	 				 
+			}
+	 			
+	 			sb.append("</table>");
+	 			sb.append("<h4>Number Of wrong CLK: "+wrongAttemptPipe+"</h4>");
+				
+	 			
+	 			SendEmail sndEmail=new SendEmail(sb.toString());
+	 			
+	 			
+	 			
+	 			int i = 0;
+	 			for (tomasulo.Instruction instruction : lstInstructionsTomasulo) {
+	 				int writeTime = instruction.getWriteTime();
+	 				// new Object[]{"Instruction"," ", "j", "k", "Issue", "Complete",
+	 				// "Write"}
+	 				// InstructionModel.addRow(new
+	 				// Object[]{"","","","","","","","",""});
+	 				InstructionModelTomasulo.setValueAt(instruction.getOper(), i, 0);
+
+	 				InstructionModelTomasulo.setValueAt(instruction.getDes(), i, 1);
+	 				InstructionModelTomasulo.setValueAt(instruction.getS1(), i, 2);
+	 				InstructionModelTomasulo.setValueAt(instruction.getS2(), i, 3);
+	 				InstructionModelTomasulo.setValueAt((instruction.isScheduled() ? instruction.getIssueNum() : " "), i, 4);
+	 				InstructionModelTomasulo.setValueAt(instruction.getExecution(), i, 5);
+	 				InstructionModelTomasulo.setValueAt((writeTime == -1 ? " " : writeTime), i, 6);
+
+	 				i++;
+	 			}
+
+	 			
+	 			
+	 			
+	 			
+	 			
+	 			
 				
 			}
 		});
@@ -4070,6 +4301,7 @@ wrongAttemptPipe=0;
 
 	}
 
+	
 	public class ScorCellRenderer extends DefaultTableCellRenderer {
 
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
@@ -4084,14 +4316,15 @@ wrongAttemptPipe=0;
 					// javax.swing.JOptionPane.showMessageDialog( new JFrame(),
 					// "Complete!" );
 					setBackground(Color.pink);
-					wrongAttemptPipe++;
+					
 				} else {
 					setBackground(Color.WHITE);
 				}
 				lstAsnswerStudet[row][column]=intStudent;
+				setText(Integer.toString( intStudent));
 			} else
 				setBackground(Color.WHITE);
-
+			
 			tblInstructionsScoreStudent.repaint();
 			/*
 			 * if (column == 1 || notFound.contains(row)) {
@@ -4125,7 +4358,11 @@ wrongAttemptPipe=0;
 					String strStudentValue = value.toString();
 					if (strStudentValue.contains("--")) {
 						strStudent = strStudentValue.split("--");
-					} else {
+					}
+					else if(strStudentValue.contains("-")){
+						strStudent = strStudentValue.split("-");
+					}					
+					else {
 						strStudent[0] = strStudentValue;
 						strStudent[1] = "0";
 					}
@@ -4157,7 +4394,7 @@ wrongAttemptPipe=0;
 					// javax.swing.JOptionPane.showMessageDialog( new JFrame(),
 					// "Complete!" );
 					setBackground(Color.pink);
-					//wrongAttemptPipe++;
+					
 				} else {
 					setBackground(Color.WHITE);
 				}
@@ -4181,4 +4418,6 @@ wrongAttemptPipe=0;
 			return this;
 		}
 	}
+
+	
 }
